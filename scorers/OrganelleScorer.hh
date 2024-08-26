@@ -34,6 +34,7 @@ public:
     
 protected:
     // Output variables
+    // 记录的能量沉积的量及与能量沉积相关的volume name
     G4float fEnergyDep;
     G4String fVolName;
 };

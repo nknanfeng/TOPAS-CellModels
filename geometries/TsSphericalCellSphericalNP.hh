@@ -32,31 +32,40 @@ public:
 				  TsVGeometryComponent* parentComponent, G4VPhysicalVolume* parentVolume, G4String& name);
 	~TsSphericalCellSphericalNP();
 	
+    // 构建几何模型的关键函数
 	G4VPhysicalVolume* Construct();
     
+    // 处理参数文件的关键函数
     void ResolveParameters();
     
     
 private:
     
-    G4double CellRadius;
-    G4double NucleusRadius;
-    G4double MitoRadius;
-    G4int MitoNumber;
-    G4double MembraneThickness;
+    // 数据成员
+    G4double CellRadius; // 细胞半径
+    G4double NucleusRadius; // 细胞核半径
+    G4double MitoRadius; // 线粒体半径
+    G4int MitoNumber; // 线粒体数量
+    G4double MembraneThickness; // 细胞膜的厚度
 
     
-    G4RotationMatrix* rotationMatrix;
-    G4VPhysicalVolume* pNucleus;
+    G4RotationMatrix* rotationMatrix;  // 旋转矩阵
+    G4VPhysicalVolume* pNucleus; // 细胞核的Physics Volume
     
-    std::vector<std::vector<G4double> >  CellCoordinates;
+    // 存放了所有在细胞中生成的几何对象的坐标，包括细胞核、线粒体、纳米颗粒等
+    // G4double用于表示三维空间中的一个点
+    std::vector<std::vector<G4double> >  CellCoordinates; 
 
     std::vector<G4double>  tmpCoordinates;
     
+    // 重叠检查的函数
     G4bool CheckOverlapOfSphereWithGeometryComponents(std::vector<std::vector<G4double> >& Coordinates, G4double r, G4double x, G4double y, G4double z);
     
+    // 在细胞中添加球体（线粒体）
     G4ThreeVector* AddSphereToCell(G4double radius);
+    // 在细胞中添加纳米颗粒
     G4ThreeVector* AddNanoparticleAtSphereSurface(G4double radius, G4int objectIndex);
+    // 将坐标添加到坐标列表中
     void AddCoordinates(std::vector<std::vector<G4double> >& Coordinates, G4double r, G4double x, G4double y, G4double z);   
 
     

@@ -36,9 +36,11 @@ G4bool OrganelleScorer::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 {
     ResolveSolid(aStep);
     
+    // 粒子在一个step中的能量沉积
     G4double flagEnergyDep      = aStep->GetTotalEnergyDeposit();
         
     //Find volume name
+    // 获取volume名称
     G4Track* aTrack = aStep->GetTrack();
     G4String volumeName = aTrack->GetVolume()->GetName();
     
@@ -52,6 +54,7 @@ G4bool OrganelleScorer::ProcessHits(G4Step* aStep, G4TouchableHistory*)
         //Get volume Name
         fVolName = volumeName;
 
+        // 记录这种两种信息
         fNtuple->Fill();
 
         return true;

@@ -31,11 +31,14 @@
 #include "G4PhysicalConstants.hh"
 #include "Randomize.hh"
 
+// 构造函数
 TsSphericalCellSphericalNP::TsSphericalCellSphericalNP(TsParameterManager* pM, TsExtensionManager* eM, TsMaterialManager* mM, TsGeometryManager* gM, TsVGeometryComponent* parentComponent, G4VPhysicalVolume* parentVolume, G4String& name) :
 TsVGeometryComponent(pM, eM, mM, gM, parentComponent, parentVolume, name)
 {
+    // 读取参数文件中的参数
     ResolveParameters();
     
+    // 初始化存放这些几何
     tmpCoordinates.resize(4);
     CellCoordinates.resize(0);
    
@@ -47,6 +50,8 @@ TsSphericalCellSphericalNP::~TsSphericalCellSphericalNP()
 
 void TsSphericalCellSphericalNP::ResolveParameters() {
     
+    // 这一步骤中，只读取了细胞半径，fPm是TsParameterManager的一个对象
+    // todo：改成椭球形细胞的话，这里是需要进行修改的
     CellRadius = fPm->GetDoubleParameter(GetFullParmName("CellRadius"), "Length");
     
 }
@@ -54,15 +59,19 @@ void TsSphericalCellSphericalNP::ResolveParameters() {
 
 G4VPhysicalVolume* TsSphericalCellSphericalNP::Construct()
 {
+    // 通常用于启动一个几何体或组件的构建过程
 	BeginConstruction();
     
     //***********************************************************************
     //              Envelope Geometry : Spherical cell
     //***********************************************************************
     
+    // 构造一个球形的细胞来作为envelop, solid volume,
+    // todo：这里需要改成椭球形细胞
     G4Sphere* gCell = new G4Sphere (fName, 0.0, CellRadius, 0., CLHEP::twopi, 0., CLHEP::pi);
     rotationMatrix = new G4RotationMatrix();
 
+    // 创建log volume 和 physics volume, 这两个概念源于geant4中
     fEnvelopeLog = CreateLogicalVolume(gCell);
     fEnvelopePhys = CreatePhysicalVolume(fEnvelopeLog);
 
@@ -72,9 +81,10 @@ G4VPhysicalVolume* TsSphericalCellSphericalNP::Construct()
     //***********************************************************************
     
     //***************************
-    // Subcomponent: Membrane
+    // Subcomponent: Membrane 
     //***************************
     
+    // 细胞膜厚度
     G4String nameMembrane = GetFullParmName("Membrane/Thickness");
     if (fPm->ParameterExists(nameMembrane)) {
         
@@ -83,6 +93,8 @@ G4VPhysicalVolume* TsSphericalCellSphericalNP::Construct()
         MembraneThickness  = fPm->GetDoubleParameter( nameMembrane, "Length" );
         G4ThreeVector* CellPosition = new G4ThreeVector(0,0,0);
 
+        // 球形的细胞膜及相应的solid volume, logic volume 和 physics volume
+        // todo:这里需要修改成椭球形
         G4Sphere* gMembrane = new G4Sphere ("Membrane", CellRadius-MembraneThickness, CellRadius, 0., CLHEP::twopi, 0., CLHEP::pi);
         G4LogicalVolume* lMembrane = CreateLogicalVolume("Membrane", gMembrane);
         G4VPhysicalVolume* pMembrane = CreatePhysicalVolume("Membrane", lMembrane, rotationMatrix, CellPosition, fEnvelopePhys);
@@ -104,6 +116,7 @@ G4VPhysicalVolume* TsSphericalCellSphericalNP::Construct()
         G4double transNucY = 0 * um;
         G4double transNucZ = 0 * um;
         
+        // 细胞核，x,y,z方向上的偏移量
         G4String name1 = GetFullParmName("Nucleus/translateX");
         G4String name2 = GetFullParmName("Nucleus/translateY");
         G4String name3 = GetFullParmName("Nucleus/translateZ");
@@ -118,12 +131,14 @@ G4VPhysicalVolume* TsSphericalCellSphericalNP::Construct()
             transNucZ = fPm->GetDoubleParameter(name3, "Length");
         }
         
+        // 简单验证，细胞核中心不能在细胞外
         if ((sqrt(transNucX*transNucX)+(transNucY*transNucY)+(transNucZ*transNucZ)) > (CellRadius-NucleusRadius)) {
                 G4cerr << "Topas is exiting due to a serious error in geometry setup." << G4endl;
                 G4cerr << "Parameter " << name1 << " sets nucleus outside of cell." << G4endl;
                 exit(1);
             }
             
+        // 细胞核的solid volume, logical volume及 physics volume
         G4ThreeVector* NucPos = new G4ThreeVector(transNucX,transNucY,transNucZ);
         G4Sphere* gNucleus = new G4Sphere ("Nucleus", 0.0, NucleusRadius, 0., CLHEP::twopi, 0., CLHEP::pi);
         G4LogicalVolume* lNucleus = CreateLogicalVolume("Nucleus", gNucleus);
@@ -135,6 +150,7 @@ G4VPhysicalVolume* TsSphericalCellSphericalNP::Construct()
     // Subcomponent: Nanoparticles at the Nucleus
     //*******************************
     
+    // 细胞核中的纳米粒子
     G4String nameNPNuc = GetFullParmName("Nanoparticle/NumberOfNanoparticlesAtNucleus");
     if (fPm->ParameterExists(nameNPNuc)) {
         
@@ -142,6 +158,7 @@ G4VPhysicalVolume* TsSphericalCellSphericalNP::Construct()
         const G4int NbOfNP  = fPm->GetIntegerParameter( GetFullParmName("Nanoparticle/NumberOfNanoparticlesAtNucleus") );
         
         //radius of the nanoparticles (default values if none are specified)
+        // 纳米粒子的默认半径
         G4double rNP = 10*nanometer;
             
         G4String nameNPNucR=GetFullParmName("Nanoparticle/r");
@@ -157,6 +174,7 @@ G4VPhysicalVolume* TsSphericalCellSphericalNP::Construct()
             
             G4cout << "** Add NP at Nucleus  " << m  <<  " **" << G4endl;
 
+            // 在AddNanoparticleAtSphereSurface(rNP, 0)函数中实现在指定半径的球体表面上随机放置一个不重合的纳米颗粒
             G4VPhysicalVolume* pNP = CreatePhysicalVolume("Nanoparticle", m, true, lNP, rotationMatrix, AddNanoparticleAtSphereSurface(rNP, 0), fEnvelopePhys);
                       
         }
@@ -169,6 +187,7 @@ G4VPhysicalVolume* TsSphericalCellSphericalNP::Construct()
     // Subcomponent: Mitochondria
     //*******************************
     MitoNumber = 0;
+    // 线粒体
     G4String name6 = GetFullParmName("Mitochondria/NumberOfMitochondria");
     if (fPm->ParameterExists(name6)) {
         
@@ -176,6 +195,7 @@ G4VPhysicalVolume* TsSphericalCellSphericalNP::Construct()
         MitoNumber  = fPm->GetIntegerParameter( GetFullParmName("Mitochondria/NumberOfMitochondria") );
         
         //radius of the mitochondria (default values if none are specified)
+        // 线粒体默认半径
         G4double MitoRadius = 0.5*micrometer;
         
         G4String name7=GetFullParmName("Mitochondria/r");
@@ -186,8 +206,8 @@ G4VPhysicalVolume* TsSphericalCellSphericalNP::Construct()
         
         //Randomly distribute mitochondria throughout the cell volume
         for (int k = 0; k < MitoNumber; k++){
-                        
-           G4VPhysicalVolume* pMito = CreatePhysicalVolume("Mitochondria", k, true, lMito, rotationMatrix, AddSphereToCell(MitoRadius), fEnvelopePhys);
+            // AddSphereToCell(MitoRadius)，在细胞内部添加球体（线粒体）确保不会与已有的几何组件重合
+            G4VPhysicalVolume* pMito = CreatePhysicalVolume("Mitochondria", k, true, lMito, rotationMatrix, AddSphereToCell(MitoRadius), fEnvelopePhys);
            
            
         }
@@ -196,6 +216,7 @@ G4VPhysicalVolume* TsSphericalCellSphericalNP::Construct()
         // Subcomponent: Nanoparticles at the Mitochondria
         //*******************************
     
+        // 线粒体表面的纳米颗粒
         G4String name8 = GetFullParmName("Nanoparticle/NumberOfNanoparticlesAtMitochondria");
         if (fPm->ParameterExists(name8)) {
         
@@ -219,6 +240,7 @@ G4VPhysicalVolume* TsSphericalCellSphericalNP::Construct()
                 G4int NPatMitochondria = std::round((G4UniformRand()*MitoNumber) + 1.0);
                 G4cout << "** Add NP "<<  m << " at Mitochondria  " << NPatMitochondria  <<  " **" << G4endl;
                 
+                // 在线粒体表面添加纳米颗粒
                 G4VPhysicalVolume* pNP = CreatePhysicalVolume("Nanoparticle", m, true, lNP, rotationMatrix, AddNanoparticleAtSphereSurface(rNP, NPatMitochondria), fEnvelopePhys);
                       
             }
@@ -230,6 +252,7 @@ G4VPhysicalVolume* TsSphericalCellSphericalNP::Construct()
     // Subcomponent: Nanoparticles
     //*******************************
     
+    // 在细胞中的纳米颗粒
     G4String name9 = GetFullParmName("Nanoparticle/NumberOfNanoparticles");
     if (fPm->ParameterExists(name9)) {
         
@@ -309,6 +332,8 @@ G4bool TsSphericalCellSphericalNP::CheckOverlapOfSphereWithGeometryComponents(st
 }
 
 
+// 记录所有这些几何体的半径和位置 
+// todo:看起来仅仅是针对球体的，细胞和细胞膜并未被记录
 void TsSphericalCellSphericalNP::AddCoordinates(std::vector<std::vector<G4double> >& Coordinates, G4double r, G4double x, G4double y, G4double z){
     tmpCoordinates[0]=r;
     tmpCoordinates[1]=x;
