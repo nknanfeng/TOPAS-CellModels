@@ -34,9 +34,9 @@ s:Ma/Nucleoplasm/DefaultColor = "red"
 
 #### WORLD ####
 s:Ge/World/Type = "TsBox"
-d:Ge/World/HLX = 6. um
-d:Ge/World/HLY = 6. um
-d:Ge/World/HLZ = 6. um
+d:Ge/World/HLX = 25. um
+d:Ge/World/HLY = 25. um
+d:Ge/World/HLZ = 25. um
 s:Ge/World/Material = "Vacuum"
 
 
@@ -44,7 +44,9 @@ s:Ge/World/Material = "Vacuum"
 s:Ge/MyCell/Type="TsSphericalCellSphericalNP"
 s:Ge/MyCell/Material="Cytoplasm"
 s:Ge/MyCell/Parent="World"
-d:Ge/MyCell/CellRadius= 5.0 um
+d:Ge/MyCell/xSemiAxis= 10.0 um
+d:Ge/MyCell/ySemiAxis= 15.0 um
+d:Ge/MyCell/zSemiAxis= 15.0 um
 s:Ge/MyCell/Color="white"
 
 #NUCLEUS
