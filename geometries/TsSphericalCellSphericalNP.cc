@@ -50,9 +50,12 @@ TsSphericalCellSphericalNP::~TsSphericalCellSphericalNP()
 
 void TsSphericalCellSphericalNP::ResolveParameters() {
     
-    // 这一步骤中，只读取了细胞半径，fPm是TsParameterManager的一个对象
     // todo：改成椭球形细胞的话，这里是需要进行修改的
-    CellRadius = fPm->GetDoubleParameter(GetFullParmName("CellRadius"), "Length");
+    xSA = fPm->GetDoubleParameter(GetFullParmName("xSemiAxis"), "Length");
+    ySA = fPm->GetDoubleParameter(GetFullParmName("ySemiAxis"), "Length");
+    zSA = fPm->GetDoubleParameter(GetFullParmName("zSemiAxis"), "Length");
+    // 这一步骤中，只读取了细胞半径，fPm是TsParameterManager的一个对象
+    // CellRadius = fPm->GetDoubleParameter(GetFullParmName("CellRadius"), "Length");
     
 }
 
@@ -67,8 +70,9 @@ G4VPhysicalVolume* TsSphericalCellSphericalNP::Construct()
     //***********************************************************************
     
     // 构造一个球形的细胞来作为envelop, solid volume,
+    // G4Sphere* gCell = new G4Sphere (fName, 0.0, CellRadius, 0., CLHEP::twopi, 0., CLHEP::pi);
     // todo：这里需要改成椭球形细胞
-    G4Sphere* gCell = new G4Sphere (fName, 0.0, CellRadius, 0., CLHEP::twopi, 0., CLHEP::pi);
+    G4Ellipsoid* gCell = new G4Ellipsoid(fName, xSA, ySA, zSA);
     rotationMatrix = new G4RotationMatrix();
 
     // 创建log volume 和 physics volume, 这两个概念源于geant4中
@@ -94,8 +98,9 @@ G4VPhysicalVolume* TsSphericalCellSphericalNP::Construct()
         G4ThreeVector* CellPosition = new G4ThreeVector(0,0,0);
 
         // 球形的细胞膜及相应的solid volume, logic volume 和 physics volume
+        // G4Sphere* gMembrane = new G4Sphere ("Membrane", CellRadius-MembraneThickness, CellRadius, 0., CLHEP::twopi, 0., CLHEP::pi);
         // todo:这里需要修改成椭球形
-        G4Sphere* gMembrane = new G4Sphere ("Membrane", CellRadius-MembraneThickness, CellRadius, 0., CLHEP::twopi, 0., CLHEP::pi);
+        G4Ellipsoid* gMembrane = new G4Ellipsoid("Membrane", xSA-MembraneThickness, ySA-MembraneThickness, zSA-MembraneThickness);
         G4LogicalVolume* lMembrane = CreateLogicalVolume("Membrane", gMembrane);
         G4VPhysicalVolume* pMembrane = CreatePhysicalVolume("Membrane", lMembrane, rotationMatrix, CellPosition, fEnvelopePhys);
         
@@ -132,7 +137,8 @@ G4VPhysicalVolume* TsSphericalCellSphericalNP::Construct()
         }
         
         // 简单验证，细胞核中心不能在细胞外
-        if ((sqrt(transNucX*transNucX)+(transNucY*transNucY)+(transNucZ*transNucZ)) > (CellRadius-NucleusRadius)) {
+        // todo：椭球形的话，判断方式要发生变化
+        if ((sqrt(transNucX*transNucX)+(transNucY*transNucY)+(transNucZ*transNucZ)) > (xSA-NucleusRadius)) {
                 G4cerr << "Topas is exiting due to a serious error in geometry setup." << G4endl;
                 G4cerr << "Parameter " << name1 << " sets nucleus outside of cell." << G4endl;
                 exit(1);
@@ -289,7 +295,8 @@ G4ThreeVector* TsSphericalCellSphericalNP::AddSphereToCell(G4double radius){
     
     long unsigned placementAttempts = 0;
     long unsigned placementAttemptsWarning = 10000;
-    G4double distanceToMembrane = CellRadius-radius-MembraneThickness;
+    // todo:这个xSA,原来是细胞半径
+    G4double distanceToMembrane = xSA-radius-MembraneThickness;
 
     while (true){
                     

@@ -42,7 +42,10 @@ public:
 private:
     
     // 数据成员
-    G4double CellRadius; // 细胞半径
+    // G4double CellRadius; // 细胞半径
+    G4double xSA; // x方向半长轴
+    G4double ySA; // y方向半长轴
+    G4double zSA; // z方向半长轴
     G4double NucleusRadius; // 细胞核半径
     G4double MitoRadius; // 线粒体半径
     G4int MitoNumber; // 线粒体数量
