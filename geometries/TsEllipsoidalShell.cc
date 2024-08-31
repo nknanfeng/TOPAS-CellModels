@@ -12,14 +12,14 @@ TsEllipsoidalShell::TsEllipsoidalShell(const G4String& name, TsParameterManager*
     : TsVGeometryComponent(name, pM, pMM, pGM, parentComponent)
 {
     // 获取外层椭球的三个半长轴
-    fOuterX = GetDoubleParameter("OuterX", "Length");
-    fOuterY = GetDoubleParameter("OuterY", "Length");
-    fOuterZ = GetDoubleParameter("OuterZ", "Length");
+    fOuterX = fPm->GetDoubleParameter(GetFullParmName("OuterX"), "Length");
+    fOuterY = fPm->GetDoubleParameter(GetFullParmName("OuterY"), "Length");
+    fOuterZ = fPm->GetDoubleParameter(GetFullParmName("OuterZ"), "Length");
 
     // 获取内层椭球的三个半长轴
-    fInnerX = GetDoubleParameter("InnerX", "Length");
-    fInnerY = GetDoubleParameter("InnerY", "Length");
-    fInnerZ = GetDoubleParameter("InnerZ", "Length");
+    fInnerX = fPm->GetDoubleParameter(GetFullParmName("InnerX"), "Length");
+    fInnerY = fPm->GetDoubleParameter(GetFullParmName("InnerY"), "Length");
+    fInnerZ = fPm->GetDoubleParameter(GetFullParmName("InnerZ"), "Length");
 }
 
 G4VPhysicalVolume* TsEllipsoidalShell::Construct()
@@ -27,10 +27,10 @@ G4VPhysicalVolume* TsEllipsoidalShell::Construct()
     BeginConstruction();
 
     // 创建外层椭球
-    G4Ellipsoid* outerEllipsoid = new G4Ellipsoid(fOuterX, fOuterY, fOuterZ);
+    G4Ellipsoid* outerEllipsoid = new G4Ellipsoid(fName, fOuterX, fOuterY, fOuterZ);
 
     // 创建内层椭球
-    G4Ellipsoid* innerEllipsoid = new G4Ellipsoid(fInnerX, fInnerY, fInnerZ);
+    G4Ellipsoid* innerEllipsoid = new G4Ellipsoid(fName, fInnerX, fInnerY, fInnerZ);
 
     // 创建椭球壳（外层椭球减去内层椭球）
     G4SubtractionSolid* ellipsoidalShell = new G4SubtractionSolid("EllipsoidalShell", outerEllipsoid, innerEllipsoid);
