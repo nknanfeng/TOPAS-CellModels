@@ -1,0 +1,73 @@
+#### GENERAL ####
+i:Ts/Seed =  1  #starting random seed 
+i:Ts/NumberOfThreads = -1
+b:Ts/DumpParameters = "True" 
+Ts/PauseBeforeQuit = "False"
+
+#### GUI ####
+s:Gr/ViewA/Type = "OpenGL"
+i:Gr/ViewA/WindowSizeX = 1200
+i:Gr/ViewA/WindowSizeY = 1000
+u:Gr/ViewA/Zoom = 2.
+Ts/UseQt = "True"
+
+#### MATERIALS ####
+#Cell cytoplasm
+sv:Ma/Cytoplasm/Components = 4 "Hydrogen" "Carbon" "Nitrogen" "Oxygen"
+uv:Ma/Cytoplasm/Fractions = 4 0.1025 0.1225 0.0425 0.7325
+d:Ma/Cytoplasm/Density = 1.0 g/cm3
+s:Ma/Cytoplasm/DefaultColor = "blue"
+
+#### WORLD ####
+s:Ge/World/Type = "TsBox"
+d:Ge/World/HLX = 25. um
+d:Ge/World/HLY = 25. um
+d:Ge/World/HLZ = 25. um
+s:Ge/World/Material = "Vacuum"
+
+#### MEMBRANE ####
+s:Ge/Membrane/Type="TsEllipsoidalShell"
+s:Ge/Membrane/Material="Cytoplasm"
+s:Ge/Membrane/Parent="World"
+d:Ge/Membrane/OuterX= 20.0 um
+d:Ge/Membrane/OuterY= 15.0 um
+d:Ge/Membrane/OuterZ= 15.0 um
+d:Ge/Membrane/InnerX= 19.00 um
+d:Ge/Membrane/InnerY= 14.00 um
+d:Ge/Membrane/InnerZ= 14.00 um
+s:Ge/Membrane/Color="white"
+
+#### CYTOPLASM ####
+s:Ge/Cytoplasm/Type="TsEllipsoidalShell"
+s:Ge/Cytoplasm/Material="Cytoplasm"
+s:Ge/Cytoplasm/Parent="World"
+d:Ge/Cytoplasm/OuterX= 19.00 um
+d:Ge/Cytoplasm/OuterY= 14.00 um
+d:Ge/Cytoplasm/OuterZ= 14.00 um
+d:Ge/Cytoplasm/InnerX= 5.0 um
+d:Ge/Cytoplasm/InnerY= 5.0 um
+d:Ge/Cytoplasm/InnerZ= 5.0 um
+s:Ge/Cytoplasm/Color="green"
+
+#### Physics and Chemistry ####
+#s:Ge/Nucleus/AssignToRegionNamed = "geant4dna"
+
+#sv:Ph/Default/Modules       = 4 "g4em-standard_opt4" "g4decay" "g4radioactivedecay" "TsEmDNAChemistry" 
+#s:Ph/Default/ForRegion/geant4dna/ActiveG4EmModelFromModule = "g4em-dna" 
+sv:Ph/Default/Modules = 3 "g4em-standard_opt0" "g4decay" "g4radioactivedecay"
+
+#### Source and runs ####
+s:So/RadionuclideSource/Type                       = "Distributed"
+s:So/RadionuclideSource/Component                  = "Cytoplasm"
+s:So/RadionuclideSource/BeamParticle               = "GenericIon(89, 225)" # Ac-225
+d:So/RadionuclideSource/BeamEnergy                 = 5. keV
+u:So/RadionuclideSource/BeamEnergySpread           = 0.
+ic:So/RadionuclideSource/NumberOfHistoriesInRun    = 10
+ic:So/RadionuclideSource/NumberOfSourcePoints      = 10
+bc:So/RadionuclideSource/RedistributePointsOnNewRun = "False"
+
+#### 粒子颜色 ####
+s:Gr/view/ColorBy                       = "ParticleType"
+sv:Gr/view/ColorByParticleTypeNames     = 4 "e-" "alpha" "proton" "gamma"
+sv:Gr/view/ColorByParticleTypeColors    = 4 "red" "blue" "grass" "green"
+s:Gr/view/BackgroundColor               = "White"
