@@ -10,7 +10,8 @@
 
 class TsEllipsoidalShell : public TsVGeometryComponent {
 public:
-    TsEllipsoidalShell(const G4String& name, TsParameterManager* pM, TsMaterialManager* pMM, TsGeometryManager* pGM, TsVGeometryComponent* parentComponent);
+    TsEllipsoidalShell(TsParameterManager* pM, TsExtensionManager* eM, TsMaterialManager* mM, TsGeometryManager* gM,
+				  TsVGeometryComponent* parentComponent, G4VPhysicalVolume* parentVolume, G4String& name);
     virtual ~TsEllipsoidalShell() {}
 
     virtual G4VPhysicalVolume* Construct();
